@@ -1347,6 +1347,7 @@ decl_module! {
 			};
 
 			let election_status = Self::era_election_status();
+			log!(trace, "Running OCW at {:?}, election status = {:?}", now, election_status);
 			if election_status.is_open_at(now) {
 				// If era election status is open at the current block, mine the solution, save it
 				// and submit it.
