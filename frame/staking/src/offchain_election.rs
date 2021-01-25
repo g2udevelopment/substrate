@@ -119,7 +119,7 @@ pub(crate) fn set_check_offchain_execution_status<T: Trait>(
 
 pub(crate) const OFFCHAIN_QUEUED_CALL: &[u8] = b"parity/staking-election/call";
 
-pub(crate) fn save_solution<T: Config>(call: Call<T>) -> Result<(), OffchainElectionError> {
+pub(crate) fn save_solution<T: Trait>(call: Call<T>) -> Result<(), OffchainElectionError> {
 	let storage = StorageValueRef::persistent(&OFFCHAIN_QUEUED_CALL);
 	let set_outcome = storage.mutate::<_, OffchainElectionError, _>(|maybe_call| {
 		match maybe_call {
@@ -140,21 +140,21 @@ pub(crate) fn save_solution<T: Config>(call: Call<T>) -> Result<(), OffchainElec
 	}
 }
 
-pub(crate) fn get_solution<T: Config>() -> Option<Call<T>> {
+pub(crate) fn get_solution<T: Trait>() -> Option<Call<T>> {
 	StorageValueRef::persistent(&OFFCHAIN_QUEUED_CALL).get().flatten()
 }
 
-pub(crate) fn submit_queued<T: Config>() -> Result<(), OffchainElectionError> {
+pub(crate) fn submit_queued<T: Trait>() -> Result<(), OffchainElectionError> {
 	let saved = get_solution().ok_or(OffchainElectionError::SolutionUnavailable)?;
 	submit_solution::<T>(saved)
 }
 
-pub(crate) fn submit_solution<T: Config>(call: Call<T>) -> Result<(), OffchainElectionError> {
+pub(crate) fn submit_solution<T: Trait>(call: Call<T>) -> Result<(), OffchainElectionError> {
 	SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into())
 		.map_err(|_| OffchainElectionError::PoolSubmissionFailed)
 }
 
-pub(crate) fn compute_save_and_submit<T: Config>() -> Result<(), OffchainElectionError> {
+pub(crate) fn compute_save_and_submit<T: Trait>() -> Result<(), OffchainElectionError> {
 	let call = compute_offchain_election::<T>()?;
 	save_solution::<T>(call.clone())?;
 	submit_solution::<T>(call)
